@@ -1,0 +1,8 @@
+Grive command and control server without encryption 
+
+
+13/09/2022 11:36
+
+we changet the protocole of the girve ---> this changes nust be do inside the grive file.
+
+17/09/2022 14:39 adding the encryption feature to the server  ----> tested.

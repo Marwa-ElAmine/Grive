@@ -1,0 +1,18 @@
+Released on 24/09/2022
+			not fully tested , it crash some times.
+
+Grive main program  does not include encryption and encoding
+
+13/09/2022 	 main.c	            change the grive protocol, now its like the CNC_grive_7.3_T.js
+13/09/2022 12:17 connection.c   remove the printf statements in the scan_sub()
+13/09/2022 23:01 main.c		    the update function is done using the following: 1- we create upadte function that(use the System command to execute wget with the filename, then we chmod) 
+		         connection.c   we call it in the main after that we close the connetcion to the server, we remove our binaries, we the use the execv function that  replace the program bythe updated version
+16/09/2022 10:51 reporter.h     change in the function system info, add the os and change in the distribution command
+17/09/2022 10:11 main.c 		add the decoding decyphering for 16 byte only ---  it works
+17/09/2022 12:17 main.c         the decoding decyphering in now working with variable lenght message 
+17/09/2022 14:08 main.c 		function in security.h that will perform the decoding, we use it at the bigging of the while loop in main
+								then we do the check based on the dbuffer, the decrypted buffer.
+								we have done some change in the test crypto server to perform the encryption well.
+								remark: the buffer from the server size is not cleaned before sending new message, it can cause later problems.
+23/09/2022 17:03 reporter.c     Un changement critique de la fonction send_msg, nous calculons la longuer du message chiffrer puis nous le  choffrant le message et nous l'envoyons.
+23/09/2022 14:23 				integrer le chiffrement dans le project.
