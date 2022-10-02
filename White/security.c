@@ -698,7 +698,7 @@ char* encrypt_encode ( char* buffer, int length){
             AesEncrypt(&context, unsi_plain, unsi_encrypted);            //encrypt it 
             memcpy(encrypted, (char*) unsi_encrypted, 16); 
             if(strlen(encrypted) < 16){
-                     printf("Ecr_chunk is: %d, %s\n", strlen(encrypted), encrypted);
+                     printf("Ecr_chunk is: %ld, %s\n", strlen(encrypted), encrypted);
             }           // encode it 
             encrypted[17]='\0';
 		    encoded = base64_encode(encrypted);         
@@ -708,7 +708,7 @@ char* encrypt_encode ( char* buffer, int length){
         // if the string is not a multiple of 16 the we must pad with spaces before the encryption
             if(rem!=0){
 
-            memcpy(plaintext,&space, 16);
+            memcpy(plaintext, "Griveenvoletoip.", 16);
 		    memcpy(plaintext,&buffer[length-rem], rem);
             memcpy(unsi_plain, (uint8_t*) plaintext, 16);
             AesEncrypt(&context, unsi_plain, unsi_encrypted);
