@@ -206,7 +206,8 @@ bool scan_sub(char* ip, int sub, int svr_sock, int BOT_ID){
                 sprintf(address, "%u.%u.%u.%u", o1,o2,o3,o4);
                 temp_sockfd = create_connection(23, address);
                 if ( temp_sockfd > 0){
-                    sprintf(mes, "OPEN %s", address);
+                    memset(mes, 0, 15);
+                    sprintf(mes, "OPEN %s-\0", address);
                     send_msg(svr_sock, mes, BOT_ID);
                     close(temp_sockfd);
                 }
@@ -217,7 +218,12 @@ bool scan_sub(char* ip, int sub, int svr_sock, int BOT_ID){
              o3 ++;
         }
     
-
+    // free(part1);
+    // free(part2);
+    // free(part3);
+    // free(part4);
+    // free(address);
+    // free(mes);
     return 1;
     
 }

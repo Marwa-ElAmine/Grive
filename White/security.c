@@ -20,7 +20,6 @@ char* base64_encode(char* plain) {
     char counts = 0;
     char buffer[3];
     char* cipher = malloc(strlen(plain) * 4 / 3 + 4);
-    printf("the size of the input inside the encoder is: %d \n ", strlen(plain));
     int i = 0, c = 0;
     for(i = 0; plain[i] != '\0'; i++) {
 
@@ -81,22 +80,8 @@ char* base64_decode(char* cipher) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //  CryptLib_Aes
-//
 //  Implementation of AES block cipher. Originally written by Kokke (https://github.com/kokke). Modified by WaterJuice
 //  retaining Public Domain license.
-//
-//  AES is a block cipher that operates on 128 bit blocks. Encryption an Decryption routines use an AesContext which
-//  must be initialised with the key. An AesContext can be initialised with a 128, 192, or 256 bit key. Use the
-//  AesInitialise[n] functions to initialise the context with the key. Once an AES context is initialised its contents
-//  are not changed by the encrypting and decrypting functions. A context only needs to be initialised once for any
-//  given key and the context may be used by the encrypt/decrypt functions in simultaneous threads.
-//  All operations are performed byte wise and this implementation works in both little and endian processors.
-//  There are no alignment requirements with the keys and data blocks.
-//
-//  This is free and unencumbered software released into the public domain - November 2017 waterjuice.org
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //  DEFINES
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -682,8 +667,7 @@ char* decode_decrypt (char* buffer, int length){
 }
 
 char* encrypt_encode ( char* buffer, int length){
-        printf("\n---------------------------------------\n");  
-        printf("to encrypt      : %s .\n",buffer);
+
     	char* plaintext = (char*) malloc(16*sizeof(char));
         char* space = (char*) malloc(16*sizeof(char));
         char* encrypted = (char*) malloc(17*sizeof(char));
@@ -704,7 +688,7 @@ char* encrypt_encode ( char* buffer, int length){
         // we must check if the length is a multiple of 16
         int rem = (length%16);
         int count = length/16;
-        printf("len:%d \t, count:%d \t, rem: %d \n", length, count, rem);
+
         // the message to encrypt does not contain the length at the beginning  
         for(int i=0; i< count; i++){  
             
@@ -734,14 +718,12 @@ char* encrypt_encode ( char* buffer, int length){
             memcpy(&final_output[count2], encoded, 24);
                count2+=24;
                  }
-        free(plaintext);
-        free(encoded);
-        free(space);
-        free(encrypted);
-        free(unsi_encrypted);
-        free(unsi_plain);
+        // free(plaintext);
+        // free(encoded);
+        // free(space);
+        // free(encrypted);
+        // free(unsi_encrypted);
+        // free(unsi_plain);
         final_output[count2]='\0';
-        printf("\n---------------------------------------\n");  
-        printf("The final_output is: %s.\n", final_output);
         return final_output;
 }

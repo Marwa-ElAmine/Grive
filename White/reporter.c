@@ -44,12 +44,12 @@ bool send_msg(int sockfd, char* m, int BOT_ID){
     int len =  strlen(msg);
     int enc_len = len/16;
     if (len%16 != 0)
-       enc_len++;
+     enc_len++;
      enc_len = enc_len*24;
    // compute the size of the encoded msg 
      if (!send(sockfd, encrypt_encode( msg, strlen(msg)), enc_len, 0))
     //if (!send(sockfd,  msg, strlen(msg), 0))
-    free(msg);
+    // free(msg);
         return false;
     return true;
 }
