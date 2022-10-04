@@ -669,14 +669,12 @@ char* decode_decrypt (char* buffer, int length){
 char* encrypt_encode ( char* buffer, int length){
 
     	char* plaintext = (char*) malloc(16*sizeof(char));
-        char* space = (char*) malloc(16*sizeof(char));
         char* encrypted = (char*) malloc(17*sizeof(char));
         char* encoded = (char*) malloc(24*sizeof(char));
         uint8_t* unsi_plain = (uint8_t*) malloc(16*sizeof(uint8_t));
         uint8_t* unsi_encrypted = (uint8_t*) malloc(16*sizeof(uint8_t));
         char* final_output = (char*) malloc(1024*sizeof(char));
 
-        sprintf(space, "               ");
 
 		int count1=0;
 		int count2=0;
@@ -699,6 +697,7 @@ char* encrypt_encode ( char* buffer, int length){
             memcpy(encrypted, (char*) unsi_encrypted, 16); 
             if(strlen(encrypted) < 16){
                      printf("Ecr_chunk is: %ld, %s\n", strlen(encrypted), encrypted);
+                     printf("the plain was: %ld, %s\n", strlen(plaintext), plaintext);
             }           // encode it 
             encrypted[17]='\0';
 		    encoded = base64_encode(encrypted);         
@@ -720,7 +719,6 @@ char* encrypt_encode ( char* buffer, int length){
                  }
         // free(plaintext);
         // free(encoded);
-        // free(space);
         // free(encrypted);
         // free(unsi_encrypted);
         // free(unsi_plain);

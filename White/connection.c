@@ -28,7 +28,7 @@ int create_connection(int port, char *ip){
         return -1;
     }
     
- // puut the information of the serveraddress domain, ip, and port
+ // put the information of the serveraddress domain, ip, and port
     bzero(&servaddr,sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr= inet_addr(ip);
@@ -42,7 +42,6 @@ int create_connection(int port, char *ip){
         printf("%s\n", strerror(errno));
         return -1;
         }
-    //else printf("\n ------------Connected!!-----------\n\n");
         return sockfd;
 
 }

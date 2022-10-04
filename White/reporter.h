@@ -18,7 +18,6 @@ void printLog(char* log);
 bool send_msg(int sockfd, char* m, int BOT_ID);
 bool send_log(int sockfd, char* log, int BOT_ID);
 bool system_info(int sockfd, int BOT_ID);
-void print_repo(char* log);
 bool report(int sockfd, int BOT_ID);
 
 #endif

