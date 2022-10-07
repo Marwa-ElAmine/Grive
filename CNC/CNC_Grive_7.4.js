@@ -200,7 +200,9 @@ function readsokcet (socket) {
                         fs.writeFile(log_path, `${d}  [IoT_Bots] action: setting_info the grive |${element.id}| distribution, status:${result.affectedRows}\n`, { flag: 'a+' }, err => {
                         if (err) throw err;
                         })
-                    });}
+                    });
+
+                }
               });
           }
 
@@ -231,6 +233,9 @@ function readsokcet (socket) {
                           fs.writeFile(log_path, `${d}  [IoT_Bots] action: setting_info the grive |${element.id}| Free RAM, status:${result.affectedRows}\n`, { flag: 'a+' }, err => {
                           if (err) throw err;
                           })
+                        if (parseInt(target[0].trim().split(' kB')[0]) < 100000 ){
+                          send_msg(socket, "07");
+                    }
                       });}
                 });
             }

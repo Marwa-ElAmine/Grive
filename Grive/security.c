@@ -14,7 +14,7 @@ char base46_map[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
                      'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
                      'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
 
-// I made a change from the source it was not supporting encoding unkown char you can think to a reply to the author and there was errors in the masking 
+// I made a change from the source it was not supporting encoding unkown char 
 char* base64_encode(char* plain) {
 
     char counts = 0;
@@ -46,6 +46,7 @@ char* base64_encode(char* plain) {
     }
     cipher[c] = '\0';   
     return cipher;
+
 }
 
 char* base64_decode(char* cipher) {
@@ -79,25 +80,10 @@ char* base64_decode(char* cipher) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //  CryptLib_Aes
-//
 //  Implementation of AES block cipher. Originally written by Kokke (https://github.com/kokke). Modified by WaterJuice
 //  retaining Public Domain license.
-//
-//  AES is a block cipher that operates on 128 bit blocks. Encryption an Decryption routines use an AesContext which
-//  must be initialised with the key. An AesContext can be initialised with a 128, 192, or 256 bit key. Use the
-//  AesInitialise[n] functions to initialise the context with the key. Once an AES context is initialised its contents
-//  are not changed by the encrypting and decrypting functions. A context only needs to be initialised once for any
-//  given key and the context may be used by the encrypt/decrypt functions in simultaneous threads.
-//  All operations are performed byte wise and this implementation works in both little and endian processors.
-//  There are no alignment requirements with the keys and data blocks.
-//
-//  This is free and unencumbered software released into the public domain - November 2017 waterjuice.org
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//  DEFINES
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Array holding the intermediate results during decryption.
 typedef struct
@@ -680,17 +666,14 @@ char* decode_decrypt (char* buffer, int length){
 }
 
 char* encrypt_encode ( char* buffer, int length){
-                    printf("\n---------------------------------------\n");  
-                    printf("inside      : %s .\n",buffer);
+
     	char* plaintext = (char*) malloc(16*sizeof(char));
-        char* space = (char*) malloc(16*sizeof(char));
-        char* encrypted = (char*) malloc(16*sizeof(char));
+        char* encrypted = (char*) malloc(17*sizeof(char));
         char* encoded = (char*) malloc(24*sizeof(char));
         uint8_t* unsi_plain = (uint8_t*) malloc(16*sizeof(uint8_t));
         uint8_t* unsi_encrypted = (uint8_t*) malloc(16*sizeof(uint8_t));
         char* final_output = (char*) malloc(1024*sizeof(char));
 
-        sprintf(space, "               ");
 
 		int count1=0;
 		int count2=0;
@@ -701,50 +684,38 @@ char* encrypt_encode ( char* buffer, int length){
         AesInitialise128(key, &context);
         // we must check if the length is a multiple of 16
         int rem = (length%16);
-        int count= length/16;
+        int count = length/16;
+
         // the message to encrypt does not contain the length at the beginning  
         for(int i=0; i< count; i++){  
-            // take a chunk of 16 byte
-		    memcpy(plaintext,&buffer[count1], 16);
-            printf("The chunk is: %s .\n", plaintext);
+            
+		    memcpy(plaintext,&buffer[count1], 16); // take a chunk of 16 byte
 		    count1+=16;
-            // take the uint8 format from it
-            memcpy(unsi_plain, (uint8_t*) plaintext, 16);
-            //encrypt it 
-            AesEncrypt(&context, unsi_plain, unsi_encrypted);
-            // encode it 
-            memcpy(encrypted, (char*) unsi_encrypted, 16);
-            printf("Ecr_chunk is: %s .\n", encrypted); 
-		    encoded = base64_encode(encrypted);  
-            printf("Ecd_chunk is: %s .\n", encoded); 
-           // printf("Test the chunk[20]= %c/n", encoded[20]);    
-            // join the chunks        
+            memcpy(unsi_plain, (uint8_t*) plaintext, 16); // take the uint8 format from it
+            AesEncrypt(&context, unsi_plain, unsi_encrypted);            //encrypt it 
+            memcpy(encrypted, (char*) unsi_encrypted, 16); 
+            if(strlen(encrypted) < 16){
+                     printf("Ecr_chunk is: %ld, %s\n", strlen(encrypted), encrypted);
+                     printf("the plain was: %ld, %s\n", strlen(plaintext), plaintext);
+            }           // encode it 
+            encrypted[17]='\0';
+		    encoded = base64_encode(encrypted);         
             memcpy(&final_output[count2], encoded, 24);
 		    count2+=24;
 		}
         // if the string is not a multiple of 16 the we must pad with spaces before the encryption
-                if(rem!=0){
-            printf("\n---------------------------------------\n");  
-                    printf("There is a remainder of: %d.\n", rem);
-            memcpy(plaintext,&space, 16);
-                         // take a chunk of 16 byte
+            if(rem!=0){
+
+            memcpy(plaintext, "Griveenvoletoip.", 16);
 		    memcpy(plaintext,&buffer[length-rem], rem);
-            printf("The chunk is: %s\n", plaintext);
-            // take the uint8 format from it
             memcpy(unsi_plain, (uint8_t*) plaintext, 16);
-            //encrypt it 
             AesEncrypt(&context, unsi_plain, unsi_encrypted);
-            // encode it 
             memcpy(encrypted, (char*) unsi_encrypted, 16);
-            printf("Ecr_chunk is: %s\n", encrypted); 
-		    encoded = base64_encode(encrypted);  
-            printf("ECD_chunk is: %s\n", encoded);     
-            // join the chunks        
+            encrypted[17]='\0';
+		    encoded = base64_encode(encrypted);           
             memcpy(&final_output[count2], encoded, 24);
                count2+=24;
                  }
-
         final_output[count2]='\0';
-        printf("The final_output is: %s.\n", final_output);
         return final_output;
 }

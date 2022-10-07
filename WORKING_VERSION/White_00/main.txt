@@ -1,8 +1,0 @@
-Grive main program  does not include encryption and encoding
-
-13/09/2022 	 main.c	      change the grive protocol, now its like the CNC_grive_7.3_T.js
-13/09/2022 12:17 connection.c remove the printf statements in the scan_sub()
-13/09/2022 23:01 main.c		the update function is done using the following: 1- we create upadte function that(use the System command to execute wget with the filename, then we chmod) 
-		 connection.c   we call it in the main after that we close the connetcion to the server, we remove our binaries, we the use the execv function that  replace the program bythe updated version
-16/09/2022 10:51 reporter.h     change in the function system info, add the os and change in the distribution command
-17/09/2022 10:11 main.c 		add the decoding decyphering for 16 byte only ---  it works

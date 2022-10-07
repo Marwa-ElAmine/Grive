@@ -28,7 +28,7 @@ int create_connection(int port, char *ip){
         return -1;
     }
     
- // puut the information of the serveraddress domain, ip, and port
+ // put the information of the serveraddress domain, ip, and port
     bzero(&servaddr,sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr= inet_addr(ip);
@@ -42,7 +42,6 @@ int create_connection(int port, char *ip){
         printf("%s\n", strerror(errno));
         return -1;
         }
-    //else printf("\n ------------Connected!!-----------\n\n");
         return sockfd;
 
 }
@@ -206,7 +205,8 @@ bool scan_sub(char* ip, int sub, int svr_sock, int BOT_ID){
                 sprintf(address, "%u.%u.%u.%u", o1,o2,o3,o4);
                 temp_sockfd = create_connection(23, address);
                 if ( temp_sockfd > 0){
-                    sprintf(mes, "OPEN %s", address);
+                    memset(mes, 0, 15);
+                    sprintf(mes, "OPEN %s-\0", address);
                     send_msg(svr_sock, mes, BOT_ID);
                     close(temp_sockfd);
                 }
@@ -216,7 +216,6 @@ bool scan_sub(char* ip, int sub, int svr_sock, int BOT_ID){
              }
              o3 ++;
         }
-    
 
     return 1;
     
